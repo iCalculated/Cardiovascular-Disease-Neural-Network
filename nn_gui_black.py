@@ -268,7 +268,7 @@ titlel.pack()
 
 # Creator list 
 creators = Label(root,
-                 text='''Mani Chadaga, Akshay Nambudripad, and Alexander "Sasha" Hydrie. Ninth Graders at Central High 
+                 text='''Mani Chadaga, Akshay Nambudiripad, and Alexander "Sasha" Hydrie. Ninth Graders at Central High 
               School''',
                  fg="#840505", bg="black", font=("Helvetica", 24))
 names.pack()
