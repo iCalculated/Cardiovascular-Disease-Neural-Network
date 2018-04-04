@@ -10,7 +10,6 @@ import sys
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-
 score = 0
 x = []
 y = []
@@ -28,11 +27,11 @@ names = ["Age (years)", "Sex (1=male, 0=female)",
          "Maximum heart rate achieved (bpm)", "Exercise-induced angina? (1=yes, 0=no)",
          "ST depression induced by exercise relative to rest",
          "Slope of the peak exercise ST segment (1=upsloping, 2=flat, 3=downsloping)",
-         "Number of major vessels (0-3) colored by flourosopy"]
+         "Number of major vessels (0-3) colored by fluoroscopy"]
 
 
 # creates the Neural Network
-def createNN(X, Y):
+def createNN(uci_set, subject):
     global score
     K.clear_session()
     model = Sequential()
@@ -44,18 +43,18 @@ def createNN(X, Y):
 
     # training loop for Neural Network
     model.compile(loss="binary_crossentropy", optimizer='adam', metrics=['accuracy'])
-    model.fit(X, Y, epochs=150, validation_split=0.2, batch_size=10, verbose=2)
+    model.fit(uci_set, subject, epochs=150, validation_split=0.2, batch_size=10, verbose=2)
 
     # tests Neural Network
-    scores = model.evaluate(X, Y)
+    scores = model.evaluate(uci_set, subject)
 
     # if the score is an error value, redo the trial.
-    if (0.5385 < scores[1] < 0.5390) or (scores[1] > 0.4611 and scores[1] < 0.4613):
+    if (0.5385 < scores[1] < 0.5390) or (0.4611 < scores[1] < 0.4613):
         if time.clock() - clock > 35:
             score = 101
             return 0
         else:
-            print("    " + "Error occured. Rerunning trial.")
+            print("    " + "Error occurred. Rerunning trial.")
             return 1
     else:
         score = (scores[1] * 100)
@@ -63,11 +62,11 @@ def createNN(X, Y):
 
 
 # trial
-def trial(X, Y):
+def trial(uci_set, subject):
     # this loop facilitates the rerunning of trials
-    succ = createNN(X, Y)
+    succ = createNN(uci_set, subject)
     if succ == 1:
-        trial(X, Y)
+        trial(uci_set, subject)
 
 
 # creating the GUI Window
@@ -85,10 +84,11 @@ root.bind("<Escape>", lambda e: root.quit())
 titlel = Label(root, text="Heart Disease Neural Network Simulation", fg="#d30404", bg="black", font=("Helvetica", 40))
 titlel.pack()
 
-# Our names
-names = Label(root,
-              text='''Mani Chadaga, Akshay Nambudripad, and Alexander "Sasha" Hydrie. Ninth Graders at Central High School''',
-              fg="#840505", bg="black", font=("Helvetica", 24))
+# Creator list 
+creators = Label(root,
+                 text='''Mani Chadaga, Akshay Nambudripad, and Alexander "Sasha" Hydrie. Ninth Graders at Central High 
+              School''',
+                 fg="#840505", bg="black", font=("Helvetica", 24))
 names.pack()
 # Set background color
 root.configure(background="black")
@@ -164,7 +164,11 @@ ltext1 = Label(root, font=("Helvetica", 24), fg="#d32424", bg="black", text="Wha
 ltext1.pack()
 ltext1.place(x=18, y=130)
 ltext2 = Label(root, anchor='w', justify='left', font=("Helvetica", 14), fg="#d35454", bg="black",
-               text='''A neural network is a type of computer program that imitates how our brains\ndeduce information based on multiple different factors. It generally takes in a\nvariety of inputs and comes to one specific output based on these ideas. At\nfirst, the neural network may be completely incorrect, but it refines its\ndeduction algorithm to the point where its accuracy is acceptable. It is\nable to improve accuracy through multivariable calculus and linear algebra.''')
+               text='''A neural network is a type of computer program that imitates how our brains\ndeduce 
+               information based on multiple different factors. It generally takes in a\nvariety of inputs and comes 
+               to one specific output based on these ideas. At\nfirst, the neural network may be completely 
+               incorrect, but it refines its\ndeduction algorithm to the point where its accuracy is acceptable. It 
+               is\nable to improve accuracy through multivariable calculus and linear algebra.''') 
 ltext2.pack()
 ltext2.place(x=25, y=170)
 
@@ -172,7 +176,13 @@ ltext3 = Label(root, font=("Helvetica", 24), fg="#d32424", bg="black", text="Wha
 ltext3.pack()
 ltext3.place(x=18, y=330)
 ltext4 = Label(root, anchor='w', justify='left', font=("Helvetica", 14), fg="#d35454", bg="black",
-               text='''Our neural network’s inputs are all factors linked to heart disease, such as\nage, sex, chest pain type, blood sugar, and ECG. We found pre existing\ndata of these attributes for 297 patients, and the dataset also mentioned\nwhether each patient had heart disease or not. Using this data, our neural\nnetwork trained itself to be able to predict a diagnosis of heart disease.\nOur project came to life when we refined our NN to only accept 2 attributes\n(in addition to age and sex, which were used every time) and train/test\nbased on those attributes. This allowed us to analyze the accuracies and\ndetermine which of the attributes were most indicative of heart disease.''')
+               text='''Our neural network’s inputs are all factors linked to heart disease, such as\nage, sex, 
+               chest pain type, blood sugar, and ECG. We found pre existing\ndata of these attributes for 297 
+               patients, and the dataset also mentioned\nwhether each patient had heart disease or not. Using this 
+               data, our neural\nnetwork trained itself to be able to predict a diagnosis of heart disease.\nOur 
+               project came to life when we refined our NN to only accept 2 attributes\n(in addition to age and sex, 
+               which were used every time) and train/test\nbased on those attributes. This allowed us to analyze the 
+               accuracies and\ndetermine which of the attributes were most indicative of heart disease.''') 
 ltext4.pack()
 ltext4.place(x=25, y=370)
 
@@ -184,9 +194,12 @@ ltext11.place(x=18, y=645)
 E1 = Entry(root)
 E1.pack()
 E1.place(x=25, y=685)
-# ltext12=Label(root,  anchor='w', justify='left',font=("Helvetica", 14), fg="#34dde2", bg="black",text='''First, press the "Reset Program Entirely" button (bottom right corner). Then,\nselect the two (2) attributes which the Neural Network will train based upon.\nIf you mistakenly select an attribute, repress its button. When you are happy\nwith the attributes, press "Launch." Allow up to 40 seconds for the program to\ncomplete. If the NN is successfully able to train, then you will be given an\naccuracy representing the proportion of heart disease patients that the NN\ncorrectly diagnosed.''')
-# ltext12.pack()
-# ltext12.place(x=25,y=685)
+# ltext12=Label(root,  anchor='w', justify='left',font=("Helvetica", 14), fg="#34dde2", bg="black",text='''First, 
+# press the "Reset Program Entirely" button (bottom right corner). Then,\nselect the two (2) attributes which the 
+# Neural Network will train based upon.\nIf you mistakenly select an attribute, repress its button. When you are 
+# happy\nwith the attributes, press "Launch." Allow up to 40 seconds for the program to\ncomplete. If the NN is 
+# successfully able to train, then you will be given an\naccuracy representing the proportion of heart disease 
+# patients that the NN\ncorrectly diagnosed.''') ltext12.pack() ltext12.place(x=25,y=685) 
 
 ltext12 = Label(root, anchor='w', justify='left', font=("Helvetica", 10), fg="#34dde2", bg="black",
                 text='''TouchScreen: Enabled''')
@@ -206,7 +219,7 @@ inputs = [0, 1]
 
 
 # A while True loop in essence.
-def launchloop():
+def launchLoop():
     # initalized global variables
     global X
     global Y
@@ -265,11 +278,10 @@ def launchloop():
                 Y[k] = 1
         time.sleep(1)
         initext2['text'] = 'Neural Network Initialized'
-        scoreslist = []
         executed = True
 
     # This makes it a loop
-    root.after(1000, launchloop)
+    root.after(1000, launchLoop)
 
 
 def update(maxr=0):
@@ -281,7 +293,8 @@ def update(maxr=0):
             atts['text'] = atts['text'] + "\n ● " + att[i]
         if maxr == 1:
             warntext[
-                'text'] = "Maximum number of attributes reached!\nYou may now launch the Neural Network.\nOr, remove an attribute by reclicking it."
+                'text'] = "Maximum number of attributes reached!\nYou may now launch the Neural Network.\nOr, " \
+                          "remove an attribute by reclicking it. "
         else:
             warntext['text'] = ""
 
@@ -445,6 +458,6 @@ relaunchh.pack()
 relaunchh.place(x=1350, y=760)
 
 # Gets the loop running
-root.after(1000, launchloop)
+root.after(1000, launchLoop)
 
 root.mainloop()
