@@ -10,9 +10,20 @@ import sys
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+# Initalize various variables
+att = []
+launched = False
+executed = False
+training = False
+trained = False
+testing = False
+accdisplayed = False
+queried = False
+inputs = [0, 1]
 score = 0
 x = []
 y = []
+
 
 # load cleveland heart disease dataset
 dataset = np.loadtxt("cleveland_hd.csv", delimiter=",")
@@ -28,6 +39,72 @@ names = ["Age (years)", "Sex (1=male, 0=female)",
          "ST depression induced by exercise relative to rest",
          "Slope of the peak exercise ST segment (1=upsloping, 2=flat, 3=downsloping)",
          "Number of major vessels (0-3) colored by fluoroscopy"]
+
+
+# A while True loop in essence.
+def launchLoop():
+    # initalized global variables
+    global X
+    global Y
+    global executed
+    global score
+    global training
+    global trained
+    global testing
+    global accdisplayed
+    global queried
+
+    # The 'text console'
+    if launched and executed and training and trained and testing and accdisplayed and queried:
+        time.sleep(2)
+        initext7['text'] = "Would you like to relaunch for these\nattributes? Or reset program completely?"
+    if launched and executed and training and trained and testing and accdisplayed and not queried:
+        time.sleep(1)
+        initext5['text'] = 'Accuracy:'
+        initext6['text'] = str(score) + "%"
+        queried = True
+    if launched and executed and training and trained and testing and not accdisplayed:
+        time.sleep(2)
+        initext4['text'] = 'NN Testing Complete.'
+        accdisplayed = True
+    if launched and executed and training and trained and not testing:
+        time.sleep(2)
+        initext4['text'] = 'Testing NN Diagnosis Accuracy...'
+        testing = True
+    if launched and executed and training and not trained:
+        trial(X, Y)
+        if score == 101:
+            initext3['fg'] = "red"
+            initext3[
+                'text'] = 'Timeout occured. NN was likely unable\nto train itself using the specified\nattributes. ' \
+                          'Relaunch, or reset and try\na completely different pair of attributes.\n\n\n: ^( '
+            trained = True
+            testing = True
+            accdisplayed = True
+            queried = True
+        else:
+            initext3['fg'] = "#f44e42"
+            initext3['text'] = 'NN Self-Training Complete.'
+            trained = True
+    if launched and executed and not training:
+        time.sleep(1)
+        initext3['text'] = 'NN Self-Training Commenced...'
+        training = True
+    if launched and not executed:
+        global clock
+        clock = time.clock()
+        initext['text'] = 'Dataset Initialized'
+        X = dataset[:, inputs]
+        Y = dataset[:, 13]
+        for k in range(len(Y)):
+            if Y[k] != 0:
+                Y[k] = 1
+        time.sleep(1)
+        initext2['text'] = 'Neural Network Initialized'
+        executed = True
+
+    # This makes it a loop
+    root.after(1000, launchLoop)
 
 
 # creates the Neural Network
@@ -67,6 +144,111 @@ def trial(uci_set, subject):
     succ = createNN(uci_set, subject)
     if succ == 1:
         trial(uci_set, subject)
+
+
+def update(maxr=0):
+    if launched:
+        atts['fg'] = '#a8554f'
+    else:
+        atts['text'] = ""
+        for i in range(len(att)):
+            atts['text'] = atts['text'] + "\n ● " + att[i]
+        if maxr == 1:
+            warntext[
+                'text'] = "Maximum number of attributes reached!\nYou may now launch the Neural Network.\nOr, " \
+                          "remove an attribute by reclicking it. "
+        else:
+            warntext['text'] = ""
+
+
+def c1(addendum, o):
+    if not launched:
+        n = o + 1
+        if n not in inputs:
+            if len(att) > 1:
+                update(1)
+            else:
+                inputs.append(n)
+                att.append(addendum)
+                update()
+        else:
+            att.remove(addendum)
+            inputs.remove(n)
+            update()
+
+
+def launch():
+    global launched
+    global inputs
+    if len(inputs) == 4 and not launched:
+        launchtext['text'] = "Status: Launched w/ desired inputs"
+        launched = True
+        update()
+
+
+def resetf():
+    global inputs
+    global att
+    global launched
+    global executed
+    global score
+    global training
+    global trained
+    global testing
+    global accdisplayed
+    global queried
+    att = []
+    launched = False
+    executed = False
+    training = False
+    trained = False
+    testing = False
+    accdisplayed = False
+    queried = False
+    inputs = [0, 1]
+    atts['text'] = ''
+    atts['fg'] = "#8e241c"
+    initext['text'] = ''
+    initext2['text'] = ''
+    initext3['text'] = ''
+    initext4['text'] = ''
+    initext5['text'] = ''
+    initext6['text'] = ''
+    initext7['text'] = ''
+    launchtext['text'] = "Status: Not Launched"
+    update()
+
+
+def relaunchf():
+    global inputs
+    global att
+    global launched
+    global executed
+    global score
+    global training
+    global trained
+    global testing
+    global accdisplayed
+    global queried
+    launched = False
+    executed = False
+    training = False
+    trained = False
+    testing = False
+    accdisplayed = False
+    queried = False
+    # K.clear_session()
+    if len(inputs) == 4 and not launched:
+        initext['text'] = ''
+        initext2['text'] = ''
+        initext3['text'] = ''
+        initext4['text'] = ''
+        initext5['text'] = ''
+        initext6['text'] = ''
+        initext7['text'] = ''
+        launchtext['text'] = "Status: Relaunched w/ desired inputs"
+        update()
+        launched = True
 
 
 # creating the GUI Window
@@ -205,189 +387,6 @@ ltext12 = Label(root, anchor='w', justify='left', font=("Helvetica", 10), fg="#3
                 text='''TouchScreen: Enabled''')
 ltext12.pack()
 ltext12.place(x=1400, y=0)
-
-# Initalize various variables
-att = []
-launched = False
-executed = False
-training = False
-trained = False
-testing = False
-accdisplayed = False
-queried = False
-inputs = [0, 1]
-
-
-# A while True loop in essence.
-def launchLoop():
-    # initalized global variables
-    global X
-    global Y
-    global executed
-    global score
-    global training
-    global trained
-    global testing
-    global accdisplayed
-    global queried
-
-    # The 'text console'
-    if launched and executed and training and trained and testing and accdisplayed and queried:
-        time.sleep(2)
-        initext7['text'] = "Would you like to relaunch for these\nattributes? Or reset program completely?"
-    if launched and executed and training and trained and testing and accdisplayed and not queried:
-        time.sleep(1)
-        initext5['text'] = 'Accuracy:'
-        initext6['text'] = str(score) + "%"
-        queried = True
-    if launched and executed and training and trained and testing and not accdisplayed:
-        time.sleep(2)
-        initext4['text'] = 'NN Testing Complete.'
-        accdisplayed = True
-    if launched and executed and training and trained and not testing:
-        time.sleep(2)
-        initext4['text'] = 'Testing NN Diagnosis Accuracy...'
-        testing = True
-    if launched and executed and training and not trained:
-        trial(X, Y)
-        if score == 101:
-            initext3['fg'] = "red"
-            initext3[
-                'text'] = 'Timeout occured. NN was likely unable\nto train itself using the specified\nattributes. ' \
-                          'Relaunch, or reset and try\na completely different pair of attributes.\n\n\n: ^( '
-            trained = True
-            testing = True
-            accdisplayed = True
-            queried = True
-        else:
-            initext3['fg'] = "#f44e42"
-            initext3['text'] = 'NN Self-Training Complete.'
-            trained = True
-    if launched and executed and not training:
-        time.sleep(1)
-        initext3['text'] = 'NN Self-Training Commenced...'
-        training = True
-    if launched and not executed:
-        global clock
-        clock = time.clock()
-        initext['text'] = 'Dataset Initialized'
-        X = dataset[:, inputs]
-        Y = dataset[:, 13]
-        for k in range(len(Y)):
-            if Y[k] != 0:
-                Y[k] = 1
-        time.sleep(1)
-        initext2['text'] = 'Neural Network Initialized'
-        executed = True
-
-    # This makes it a loop
-    root.after(1000, launchLoop)
-
-
-def update(maxr=0):
-    if launched:
-        atts['fg'] = '#a8554f'
-    else:
-        atts['text'] = ""
-        for i in range(len(att)):
-            atts['text'] = atts['text'] + "\n ● " + att[i]
-        if maxr == 1:
-            warntext[
-                'text'] = "Maximum number of attributes reached!\nYou may now launch the Neural Network.\nOr, " \
-                          "remove an attribute by reclicking it. "
-        else:
-            warntext['text'] = ""
-
-
-def c1(addendum, o):
-    if not launched:
-        n = o + 1
-        if n not in inputs:
-            if len(att) > 1:
-                update(1)
-            else:
-                inputs.append(n)
-                att.append(addendum)
-                update()
-        else:
-            att.remove(addendum)
-            inputs.remove(n)
-            update()
-
-
-def launch():
-    global launched
-    global inputs
-    if len(inputs) == 4 and not launched:
-        launchtext['text'] = "Status: Launched w/ desired inputs"
-        launched = True
-        update()
-
-
-def resetf():
-    global inputs
-    global att
-    global launched
-    global executed
-    global score
-    global training
-    global trained
-    global testing
-    global accdisplayed
-    global queried
-    att = []
-    launched = False
-    executed = False
-    training = False
-    trained = False
-    testing = False
-    accdisplayed = False
-    queried = False
-    inputs = [0, 1]
-    atts['text'] = ''
-    atts['fg'] = "#8e241c"
-    initext['text'] = ''
-    initext2['text'] = ''
-    initext3['text'] = ''
-    initext4['text'] = ''
-    initext5['text'] = ''
-    initext6['text'] = ''
-    initext7['text'] = ''
-    launchtext['text'] = "Status: Not Launched"
-    update()
-
-
-def relaunchf():
-    global inputs
-    global att
-    global launched
-    global executed
-    global score
-    global training
-    global trained
-    global testing
-    global accdisplayed
-    global queried
-    launched = False
-    executed = False
-    training = False
-    trained = False
-    testing = False
-    accdisplayed = False
-    queried = False
-    # K.clear_session()
-    if len(inputs) == 4 and not launched:
-        initext['text'] = ''
-        initext2['text'] = ''
-        initext3['text'] = ''
-        initext4['text'] = ''
-        initext5['text'] = ''
-        initext6['text'] = ''
-        initext7['text'] = ''
-        launchtext['text'] = "Status: Relaunched w/ desired inputs"
-        update()
-        launched = True
-
 
 # All buttons in GUI
 a1 = Button(root, image=p1, command=lambda: c1("Reported Chest Pain Type", 1), height=60, width=100)
